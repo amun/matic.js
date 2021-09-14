@@ -28,7 +28,7 @@ export default class ExitManager extends ContractsBase {
     this.networkApiUrl = options.network.Matic.NetworkAPI
   }
 
-  async buildPayloadForExit(burnTxHash, logEventSig, requestConcurrency?) {
+  async buildPayloadForExit(burnTxHash, logEventSig, requestConcurrency?, token: string = '') {
     // check checkpoint
     const lastChildBlock = await this.rootChain.getLastChildBlock()
     const burnTx = await this.web3Client.getMaticWeb3().eth.getTransaction(burnTxHash)
@@ -70,6 +70,7 @@ export default class ExitManager extends ContractsBase {
       case '0xf94915c6d1fd521cee85359239227480c7e8776d7caf1fc3bacad5c269b66a14':
         logIndex = receipt.logs.findIndex(
           log =>
+            (token == '' || log.address.toLowerCase() == token.toLowerCase()) &&
             log.topics[0].toLowerCase() == logEventSig.toLowerCase() &&
             log.topics[2].toLowerCase() == '0x0000000000000000000000000000000000000000000000000000000000000000'
         )
@@ -116,7 +117,7 @@ export default class ExitManager extends ContractsBase {
     return blockProof
   }
 
-  async buildPayloadForExitHermoine(burnTxHash, logEventSig) {
+  async buildPayloadForExitHermoine(burnTxHash, logEventSig, token: string) {
     // check checkpoint
     const lastChildBlock = await this.rootChain.getLastChildBlock()
     const receipt = await this.web3Client.getMaticWeb3().eth.getTransactionReceipt(burnTxHash)
@@ -172,6 +173,7 @@ export default class ExitManager extends ContractsBase {
       case '0xf94915c6d1fd521cee85359239227480c7e8776d7caf1fc3bacad5c269b66a14':
         logIndex = receipt.logs.findIndex(
           log =>
+            (token == '' || log.address.toLowerCase() == token.toLowerCase()) &&
             log.topics[0].toLowerCase() == logEventSig.toLowerCase() &&
             log.topics[2].toLowerCase() == '0x0000000000000000000000000000000000000000000000000000000000000000'
         )
@@ -206,7 +208,7 @@ export default class ExitManager extends ContractsBase {
     )
   }
 
-  async getExitHash(burnTxHash, logEventSig, requestConcurrency?) {
+  async getExitHash(burnTxHash, logEventSig, requestConcurrency?, token: string = '') {
     const lastChildBlock = await this.rootChain.getLastChildBlock()
     const receipt = await this.web3Client.getMaticWeb3().eth.getTransactionReceipt(burnTxHash)
     const block: any = await this.web3Client
@@ -232,6 +234,7 @@ export default class ExitManager extends ContractsBase {
       case '0xf94915c6d1fd521cee85359239227480c7e8776d7caf1fc3bacad5c269b66a14':
         logIndex = receipt.logs.findIndex(
           log =>
+            (token == '' || log.address.toLowerCase() == token.toLowerCase()) &&
             log.topics[0].toLowerCase() == logEventSig.toLowerCase() &&
             log.topics[2].toLowerCase() == '0x0000000000000000000000000000000000000000000000000000000000000000'
         )

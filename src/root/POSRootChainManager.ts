@@ -80,11 +80,11 @@ export default class POSRootChainManager extends ContractsBase {
     return this.web3Client.send(txObject, web3Options, options)
   }
 
-  async exit(burnTxHash: string, logSignature: string, options?: SendOptions) {
+  async exit(burnTxHash: string, logSignature: string, token: string, options?: SendOptions) {
     if (!this.posRootChainManager.options.address) {
       throw new Error('posRootChainManager address not found. Set it while constructing MaticPOSClient.')
     }
-    const payload = await this.exitManager.buildPayloadForExit(burnTxHash, logSignature, this.requestConcurrency)
+    const payload = await this.exitManager.buildPayloadForExit(burnTxHash, logSignature, this.requestConcurrency, token)
     const txObject = this.posRootChainManager.methods.exit(payload)
     const web3Options = await this.web3Client.fillOptions(txObject, true /* onRootChain */, options)
     if (web3Options.encodeAbi) {
@@ -98,11 +98,11 @@ export default class POSRootChainManager extends ContractsBase {
     return proof
   }
 
-  async exitHermoine(burnTxHash: string, logSignature: string, options?: SendOptions) {
+  async exitHermoine(burnTxHash: string, logSignature: string, token: string, options?: SendOptions) {
     if (!this.posRootChainManager.options.address) {
       throw new Error('posRootChainManager address not found. Set it while constructing MaticPOSClient.')
     }
-    const payload = await this.exitManager.buildPayloadForExitHermoine(burnTxHash, logSignature)
+    const payload = await this.exitManager.buildPayloadForExitHermoine(burnTxHash, logSignature, token)
     const txObject = this.posRootChainManager.methods.exit(payload)
     const web3Options = await this.web3Client.fillOptions(txObject, true /* onRootChain */, options)
     if (web3Options.encodeAbi) {
@@ -116,13 +116,13 @@ export default class POSRootChainManager extends ContractsBase {
     return payload
   }
 
-  async isExitProcessed(burnTxHash: string, logSignature: string) {
-    const exitHash = await this.exitManager.getExitHash(burnTxHash, logSignature, this.requestConcurrency)
+  async isExitProcessed(burnTxHash: string, logSignature: string, token: string) {
+    const exitHash = await this.exitManager.getExitHash(burnTxHash, logSignature, this.requestConcurrency, token)
     return this.posRootChainManager.methods.processedExits(exitHash).call()
   }
 
-  async processReceivedMessage(contractAddress: address, txHash: string, options?: SendOptions) {
-    const payload = await this.exitManager.buildPayloadForExitHermoine(txHash, MESSAGE_SENT_EVENT_SIG)
+  async processReceivedMessage(contractAddress: address, txHash: string, token: string, options?: SendOptions) {
+    const payload = await this.exitManager.buildPayloadForExitHermoine(txHash, MESSAGE_SENT_EVENT_SIG, token)
     let rootTunnelContract = new this.web3Client.parentWeb3.eth.Contract(this.rootTunnelContractAbi, contractAddress)
     let txObject = rootTunnelContract.methods.receiveMessage(payload)
     const web3Options = await this.web3Client.fillOptions(txObject, true /* onRootChain */, options)
@@ -132,8 +132,8 @@ export default class POSRootChainManager extends ContractsBase {
     return this.web3Client.send(txObject, web3Options, options)
   }
 
-  async customPayload(txHash: string, eventSig: string) {
-    const payload = await this.exitManager.buildPayloadForExitHermoine(txHash, eventSig)
+  async customPayload(txHash: string, eventSig: string, token: string) {
+    const payload = await this.exitManager.buildPayloadForExitHermoine(txHash, eventSig, token)
     return payload
   }
 
@@ -190,16 +190,16 @@ export default class POSRootChainManager extends ContractsBase {
     return this.web3Client.send(txObject, web3Options, options)
   }
 
-  async exitERC20(burnTxHash: string, options?: SendOptions) {
-    return this.exit(burnTxHash, ERC20_TRANSFER_EVENT_SIG, options)
+  async exitERC20(burnTxHash: string, token: string, options?: SendOptions) {
+    return this.exit(burnTxHash, ERC20_TRANSFER_EVENT_SIG, token, options)
   }
 
-  async exitERC20Hermoine(burnTxHash: string, options?: SendOptions) {
-    return this.exitHermoine(burnTxHash, ERC20_TRANSFER_EVENT_SIG, options)
+  async exitERC20Hermoine(burnTxHash: string, token: string, options?: SendOptions) {
+    return this.exitHermoine(burnTxHash, ERC20_TRANSFER_EVENT_SIG, token, options)
   }
 
-  async isERC20ExitProcessed(burnTxHash: string) {
-    return this.isExitProcessed(burnTxHash, ERC20_TRANSFER_EVENT_SIG)
+  async isERC20ExitProcessed(burnTxHash: string, token: string) {
+    return this.isExitProcessed(burnTxHash, ERC20_TRANSFER_EVENT_SIG, token)
   }
 
   async approveERC721(rootToken: address, tokenId: BN | string, options?: SendOptions) {
@@ -296,35 +296,35 @@ export default class POSRootChainManager extends ContractsBase {
   }
 
   async exitERC721(burnTxHash: string, options?: SendOptions) {
-    return this.exit(burnTxHash, ERC721_TRANSFER_EVENT_SIG, options)
+    return this.exit(burnTxHash, ERC721_TRANSFER_EVENT_SIG, '', options)
   }
 
   async exitBatchERC721(burnTxHash: string, options?: SendOptions) {
-    return this.exit(burnTxHash, ERC721_WITHDRAW_BATCH_EVENT_SIG, options)
+    return this.exit(burnTxHash, ERC721_WITHDRAW_BATCH_EVENT_SIG, '', options)
   }
 
   async exitERC721WithMetadata(burnTxHash: string, options?: SendOptions) {
-    return this.exit(burnTxHash, TRANSFER_WITH_METADATA_EVENT_SIG, options)
+    return this.exit(burnTxHash, TRANSFER_WITH_METADATA_EVENT_SIG, '', options)
   }
 
   async exitERC721WithMetadataHermoine(burnTxHash: string, options?: SendOptions) {
-    return this.exitHermoine(burnTxHash, TRANSFER_WITH_METADATA_EVENT_SIG, options)
+    return this.exitHermoine(burnTxHash, TRANSFER_WITH_METADATA_EVENT_SIG, '', options)
   }
 
   async exitBatchERC721Hermoine(burnTxHash: string, options?: SendOptions) {
-    return this.exitHermoine(burnTxHash, ERC721_WITHDRAW_BATCH_EVENT_SIG, options)
+    return this.exitHermoine(burnTxHash, ERC721_WITHDRAW_BATCH_EVENT_SIG, '', options)
   }
 
   async exitERC721Hermoine(burnTxHash: string, options?: SendOptions) {
-    return this.exitHermoine(burnTxHash, ERC721_TRANSFER_EVENT_SIG, options)
+    return this.exitHermoine(burnTxHash, ERC721_TRANSFER_EVENT_SIG, '', options)
   }
 
   async isERC721ExitProcessed(burnTxHash: string) {
-    return this.isExitProcessed(burnTxHash, ERC721_TRANSFER_EVENT_SIG)
+    return this.isExitProcessed(burnTxHash, ERC721_TRANSFER_EVENT_SIG, '')
   }
 
   async isBatchERC721ExitProcessed(burnTxHash: string) {
-    return this.isExitProcessed(burnTxHash, ERC721_WITHDRAW_BATCH_EVENT_SIG)
+    return this.isExitProcessed(burnTxHash, ERC721_WITHDRAW_BATCH_EVENT_SIG, '')
   }
 
   async approveERC1155(rootToken: address, options?: SendOptions) {
@@ -411,27 +411,27 @@ export default class POSRootChainManager extends ContractsBase {
   }
 
   async exitSingleERC1155(burnTxHash: string, options?: SendOptions) {
-    return this.exit(burnTxHash, ERC1155_TRANSFER_SINGLE_EVENT_SIG, options)
+    return this.exit(burnTxHash, ERC1155_TRANSFER_SINGLE_EVENT_SIG, '', options)
   }
 
   async exitSingleERC1155Hermoine(burnTxHash: string, options?: SendOptions) {
-    return this.exitHermoine(burnTxHash, ERC1155_TRANSFER_SINGLE_EVENT_SIG, options)
+    return this.exitHermoine(burnTxHash, ERC1155_TRANSFER_SINGLE_EVENT_SIG, '', options)
   }
 
   async isSingleERC1155ExitProcessed(burnTxHash: string) {
-    return this.isExitProcessed(burnTxHash, ERC1155_TRANSFER_SINGLE_EVENT_SIG)
+    return this.isExitProcessed(burnTxHash, ERC1155_TRANSFER_SINGLE_EVENT_SIG, '')
   }
 
   async exitBatchERC1155(burnTxHash: string, options?: SendOptions) {
-    return this.exit(burnTxHash, ERC1155_TRANSFER_BATCH_EVENT_SIG, options)
+    return this.exit(burnTxHash, ERC1155_TRANSFER_BATCH_EVENT_SIG, '', options)
   }
 
   async exitBatchERC1155Hermoine(burnTxHash: string, options?: SendOptions) {
-    return this.exitHermoine(burnTxHash, ERC1155_TRANSFER_BATCH_EVENT_SIG, options)
+    return this.exitHermoine(burnTxHash, ERC1155_TRANSFER_BATCH_EVENT_SIG, '', options)
   }
 
   async isBatchERC1155ExitProcessed(burnTxHash: string) {
-    return this.isExitProcessed(burnTxHash, ERC1155_TRANSFER_BATCH_EVENT_SIG)
+    return this.isExitProcessed(burnTxHash, ERC1155_TRANSFER_BATCH_EVENT_SIG, '')
   }
 
   async mintERC721(childToken: address, userAddress: address, tokenId: BN | string, options?: SendOptions) {

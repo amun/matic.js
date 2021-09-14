@@ -73,7 +73,7 @@ export class MaticPOSClient extends SDKClient {
     return this.posRootChainManager.burnERC20(childToken, amount, options)
   }
 
-  exitERC20(txHash: string, options?: SendOptions) {
+  exitERC20(txHash: string, token: string, options?: SendOptions) {
     if (!txHash) {
       throw new Error(`txHash not provided`)
     }
@@ -81,17 +81,17 @@ export class MaticPOSClient extends SDKClient {
       throw new Error(`from missing`)
     }
     if (options && options.legacyProof) {
-      return this.posRootChainManager.exitERC20(txHash, options)
+      return this.posRootChainManager.exitERC20(txHash, token, options)
     } else {
-      return this.posRootChainManager.exitERC20Hermoine(txHash, options)
+      return this.posRootChainManager.exitERC20Hermoine(txHash, token, options)
     }
   }
 
-  isERC20ExitProcessed(txHash: string) {
+  isERC20ExitProcessed(txHash: string, token: string) {
     if (!txHash) {
       throw new Error(`txHash not provided`)
     }
-    return this.posRootChainManager.isERC20ExitProcessed(txHash)
+    return this.posRootChainManager.isERC20ExitProcessed(txHash, token)
   }
 
   approveERC721ForDeposit(rootToken: address, tokenId: BN | string, options?: SendOptions) {

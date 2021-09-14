@@ -107,10 +107,11 @@ export default class WithdrawManager extends ContractsBase {
     return this.web3Client.send(txObject, web3Options, options)
   }
 
-  async startExitWithBurntERC20TokensHermoine(burnTxHash, options?) {
+  async startExitWithBurntERC20TokensHermoine(burnTxHash, token, options?) {
     const payload = await this.exitManager.buildPayloadForExitHermoine(
       burnTxHash,
-      WithdrawManager.ERC20_WITHDRAW_EVENT_SIG
+      WithdrawManager.ERC20_WITHDRAW_EVENT_SIG,
+      token
     )
     const txObject = this.erc20Predicate.methods.startExitWithBurntTokens(payload)
     const web3Options = await this.web3Client.fillOptions(txObject, true /* onRootChain */, options)
@@ -133,7 +134,8 @@ export default class WithdrawManager extends ContractsBase {
   async startExitWithBurntERC721TokensHermoine(burnTxHash, options?) {
     const payload = await this.exitManager.buildPayloadForExitHermoine(
       burnTxHash,
-      WithdrawManager.ERC721_WITHDRAW_EVENT_SIG
+      WithdrawManager.ERC721_WITHDRAW_EVENT_SIG,
+      ''
     )
     const txObject = this.erc721Predicate.methods.startExitWithBurntTokens(payload)
     const web3Options = await this.web3Client.fillOptions(txObject, true /* onRootChain */, options)
